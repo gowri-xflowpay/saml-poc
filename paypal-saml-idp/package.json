@@ -1,0 +1,13 @@
+{
+  "name": "paypal-saml-idp",
+  "version": "1.0.0",
+  "description": "Dummy PayPal SAML Identity Provider for testing SSO flows",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "generate-certs": "openssl req -x509 -new -newkey rsa:2048 -nodes -subj '/C=US/ST=California/L=San Jose/O=PayPal/CN=PayPal Test IdP' -keyout idp-private-key.pem -out idp-public-cert.pem -days 7300"
+  },
+  "dependencies": {
+    "saml-idp": "^1.2.1"
+  }
+}

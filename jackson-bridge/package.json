@@ -1,0 +1,13 @@
+{
+  "name": "jackson-bridge",
+  "version": "1.0.0",
+  "description": "BoxyHQ Jackson SAML-to-OIDC Bridge with Demo App for PayPal SSO",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@boxyhq/saml-jackson": "^1.23.11",
+    "express": "^4.21.0"
+  }
+}

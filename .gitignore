@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IdP / SAML test certificates (generated locally; do not commit private keys)
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Optional tooling
+coverage/
+.nyc_output/
+*.tsbuildinfo

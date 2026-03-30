@@ -1,0 +1,19 @@
+# Add this provider entry under: selfservice.methods.oidc.config.providers
+#
+# Since Kratos runs in Docker but Jackson runs on the host:
+#   - issuer_url / token_url use host.docker.internal (server-to-server from Docker)
+#   - auth_url uses localhost (browser redirect, runs on host)
+
+- id: paypal-sso
+  provider: generic
+  label: "PayPal SSO"
+  client_id: "tenant=paypal.com&product=xflowpay"
+  client_secret: "dummy"
+  scope:
+    - openid
+    - email
+    - profile
+  issuer_url: http://host.docker.internal:5225
+  auth_url: http://localhost:5225/api/oauth/authorize
+  token_url: http://host.docker.internal:5225/api/oauth/token
+  mapper_url: "base64://bG9jYWwgY2xhaW1zID0gewogIGVtYWlsX3ZlcmlmaWVkOiBmYWxzZSwKfSArIHN0ZC5leHRWYXIoJ2NsYWltcycpOwoKewoKICBpZGVudGl0eTogewogICAgdHJhaXRzOiB7CiAgICAgIFtpZiAnZW1haWwnIGluIGNsYWltcyB0aGVuICdlbWFpbCcgZWxzZSBudWxsXTogY2xhaW1zLmVtYWlsLAogICAgfSwKICAgIHZlcmlmaWVkX2FkZHJlc3Nlczogc3RkLnBydW5lKFsKICAgICAgaWYgJ2VtYWlsJyBpbiBjbGFpbXMgJiYgY2xhaW1zLmVtYWlsX3ZlcmlmaWVkIHRoZW4geyB2aWE6ICdlbWFpbCcsIHZhbHVlOiBjbGFpbXMuZW1haWwgfSwKICAgIF0pLAogIH0sCn0="
