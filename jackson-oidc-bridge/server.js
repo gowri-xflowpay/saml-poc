@@ -8,7 +8,7 @@ const https = require("https");
 // ══════════════════════════════════════════════════════════════════════
 //
 // PayPal's OIDC implementation deviates from spec in ways that break
-// openid-client (used internally by Jackson). This layer patches three
+// openid-client (used internally by Jackson). This layer patches two
 // specific incompatibilities at the HTTPS transport level:
 //
 //   1. AUTH METHOD — PayPal requires client_secret_basic (credentials
@@ -19,11 +19,6 @@ const https = require("https");
 //      access_token; openid-client expects an id_token. We fetch the
 //      user's profile from PayPal's userinfo API and construct a
 //      conformant id_token (HS256-signed with client_secret).
-//
-//   3. USERINFO ENDPOINT — Tokens from /v1/oauth2/token are rejected
-//      by PayPal's legacy OIDC userinfo (/v1/identity/openidconnect/).
-//      We redirect those calls to /v1/identity/oauth2/userinfo which
-//      accepts standard OAuth2 bearer tokens.
 //
 // NOTE: This monkey-patching approach is acceptable for a POC. In
 // production, replace with a proper HTTP adapter or use a PayPal-aware
@@ -46,7 +41,7 @@ function fetchPayPalUserInfo(accessToken, hostname) {
     const req = _origRequest(
       {
         hostname,
-        path: "/v1/identity/oauth2/userinfo?schema=openid",
+        path: "/v1/oauth2/token/userinfo?schema=openid",
         method: "GET",
         headers: {
           authorization: `Bearer ${accessToken}`,
@@ -77,21 +72,11 @@ function fetchPayPalUserInfo(accessToken, hostname) {
 }
 
 https.request = function (options, callback) {
-  if (typeof options !== "object" || !options.hostname?.includes("paypal")) {
-    return _origRequest.call(this, options, callback);
-  }
-
-  // Shim 3: redirect legacy OIDC userinfo → OAuth2 userinfo
-  if (options.path?.includes("/openidconnect/userinfo")) {
-    options.path = options.path.replace(
-      "/v1/identity/openidconnect/userinfo",
-      "/v1/identity/oauth2/userinfo",
-    );
-    return _origRequest.call(this, options, callback);
-  }
-
-  // Shims 1 + 2 only apply to the token endpoint
-  if (!options.path?.includes("/oauth2/token")) {
+  if (
+    typeof options !== "object" ||
+    !options.hostname?.includes("paypal") ||
+    !options.path?.match(/\/oauth2\/token(?!\/)/)
+  ) {
     return _origRequest.call(this, options, callback);
   }
 

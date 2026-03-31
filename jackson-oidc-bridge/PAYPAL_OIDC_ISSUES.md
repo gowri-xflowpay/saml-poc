@@ -1,6 +1,6 @@
 # PayPal OIDC Integration — Problems & Solutions
 
-This document explains the three specific problems encountered when integrating PayPal's OIDC with [BoxyHQ Jackson](https://github.com/boxyhq/jackson) and [Ory Kratos](https://www.ory.sh/kratos/), and how each was resolved.
+This document explains the problems encountered when integrating PayPal's OIDC with [BoxyHQ Jackson](https://github.com/boxyhq/jackson) and [Ory Kratos](https://www.ory.sh/kratos/), and how each was resolved.
 
 ---
 
@@ -19,7 +19,7 @@ The Jackson bridge sits between Kratos and PayPal. Kratos sees a spec-compliant 
 
 ---
 
-## The Three Problems
+## Problems & Solutions
 
 ### Problem 1: Client Authentication Method Mismatch
 
@@ -94,7 +94,7 @@ PayPal's `/v1/oauth2/token` endpoint is primarily an OAuth 2.0 endpoint. Even wh
 
 When PayPal's token response is `200 OK` with an `access_token` but no `id_token`:
 
-1. Call PayPal's userinfo endpoint (`GET /v1/identity/oauth2/userinfo?schema=openid`) using the `access_token`
+1. Call PayPal's userinfo endpoint (`GET /v1/oauth2/token/userinfo?schema=openid`) using the `access_token`
 2. Extract the user's `sub`, `email`, `name`, `given_name`, `family_name`
 3. Construct a conformant `id_token` JWT:
    - **Issuer** (`iss`): PayPal's origin (from discovery URL)
@@ -118,58 +118,33 @@ token exchange    → id_token.nonce = _nonceByCode[code]
 
 ---
 
-### Problem 3: Userinfo Endpoint Incompatibility
-
-**What happened**
-
-After injecting the synthetic `id_token`, Jackson's `openid-client` accepted the token response. It then called PayPal's userinfo endpoint (from the discovery document) to build the user profile. The discovery document pointed to:
-
-```
-/v1/identity/openidconnect/userinfo
-```
-
-This returned `401 Unauthorized`.
-
-**Root cause**
+### Problem 3 (Resolved via configuration): Userinfo Endpoint Incompatibility
 
 PayPal has **two separate** userinfo endpoints:
 
 | Endpoint | Accepts tokens from |
 |---|---|
 | `/v1/identity/openidconnect/userinfo` | Legacy OIDC token endpoint (`/v1/identity/openidconnect/tokenservice`) |
-| `/v1/identity/oauth2/userinfo` | OAuth 2.0 token endpoint (`/v1/oauth2/token`) |
+| `/v1/oauth2/token/userinfo` | OAuth 2.0 token endpoint (`/v1/oauth2/token`) |
 
-Our `access_token` came from `/v1/oauth2/token`, so the legacy OIDC userinfo endpoint rejected it. The correct endpoint is `/v1/identity/oauth2/userinfo`.
-
-**Solution (Shim 3)**
-
-Intercept HTTPS requests where the path contains `/openidconnect/userinfo` and redirect to `/oauth2/userinfo`:
-
-```
-Before:  GET /v1/identity/openidconnect/userinfo?schema=openid
-After:   GET /v1/identity/oauth2/userinfo?schema=openid
-```
-
-This ensures both:
-- The bridge's own userinfo call (for id_token synthesis) works
-- Jackson's subsequent userinfo call (for profile extraction) works
+Initially, the discovery document pointed to the legacy endpoint, which rejected our OAuth2 access tokens with `401 Unauthorized`. This was fixed by updating the discovery document's `userinfo_endpoint` to `/v1/oauth2/token/userinfo`. No code shim is needed for this — it's a configuration fix at the discovery level.
 
 ---
 
-## Summary of All Shims
+## Summary of Shims
 
 | # | Problem | PayPal Behavior | OIDC Spec Expectation | Fix |
 |---|---------|----------------|----------------------|-----|
 | 1 | `invalid_client` | Only accepts `client_secret_basic` | `openid-client` sends `client_secret_post` | Move credentials to `Authorization: Basic` header |
 | 2 | Missing `id_token` | `/v1/oauth2/token` returns only `access_token` | `id_token` required when `openid` scope is requested | Fetch userinfo + synthesize HS256 JWT |
-| 3 | Userinfo `401` | Legacy OIDC userinfo rejects OAuth2 tokens | Userinfo should accept any valid access token | Redirect to `/v1/identity/oauth2/userinfo` |
+| 3 | Userinfo `401` | Legacy OIDC userinfo rejects OAuth2 tokens | Userinfo should accept any valid access token | Fixed by updating discovery doc `userinfo_endpoint` |
 
 ---
 
 ## What Data Comes From Where
 
 ```
-PayPal userinfo (/v1/identity/oauth2/userinfo):
+PayPal userinfo (/v1/oauth2/token/userinfo):
   ├── sub (user_id)     → id_token.sub, Kratos identity ID
   ├── email             → id_token.email, Kratos traits.email
   ├── name              → id_token.name
