@@ -1,0 +1,14 @@
+{
+  "name": "jackson-oidc-bridge",
+  "version": "1.0.0",
+  "description": "BoxyHQ Jackson OIDC-to-OIDC Bridge — normalizes PayPal's OIDC for Kratos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@boxyhq/saml-jackson": "^1.23.11",
+    "express": "^4.21.0",
+    "dotenv": "^16.4.7"
+  }
+}

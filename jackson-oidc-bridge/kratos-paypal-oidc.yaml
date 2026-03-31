@@ -1,0 +1,21 @@
+# Add this provider entry under: selfservice.methods.oidc.config.providers
+#
+# Jackson OIDC Bridge normalizes PayPal's non-standard OIDC
+# (HS256 tokens, mismatched issuer) into clean RS256 OIDC for Kratos.
+#
+# Requires Kratos to reach localhost:5225 (Jackson on host).
+# Use network_mode: host in docker-compose, or map the port accordingly.
+
+- id: paypal-sso
+  provider: generic
+  label: "PayPal"
+  client_id: "tenant=paypal.com&product=xflowpay"
+  client_secret: "dummy"
+  scope:
+    - openid
+    - email
+    - profile
+  issuer_url: http://local.xflowpay.com:5225
+  auth_url: http://local.xflowpay.com:5225/api/oauth/authorize
+  token_url: http://local.xflowpay.com:5225/api/oauth/token
+  mapper_url: "base64://bG9jYWwgY2xhaW1zID0gewogIGVtYWlsX3ZlcmlmaWVkOiBmYWxzZSwKfSArIHN0ZC5leHRWYXIoJ2NsYWltcycpOwoKewoKICBpZGVudGl0eTogewogICAgdHJhaXRzOiB7CiAgICAgIFtpZiAnZW1haWwnIGluIGNsYWltcyB0aGVuICdlbWFpbCcgZWxzZSBudWxsXTogY2xhaW1zLmVtYWlsLAogICAgfSwKICAgIHZlcmlmaWVkX2FkZHJlc3Nlczogc3RkLnBydW5lKFsKICAgICAgaWYgJ2VtYWlsJyBpbiBjbGFpbXMgJiYgY2xhaW1zLmVtYWlsX3ZlcmlmaWVkIHRoZW4geyB2aWE6ICdlbWFpbCcsIHZhbHVlOiBjbGFpbXMuZW1haWwgfSwKICAgIF0pLAogIH0sCn0="
