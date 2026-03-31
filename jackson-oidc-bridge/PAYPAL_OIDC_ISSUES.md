@@ -11,7 +11,7 @@ Browser → Kratos → Jackson Bridge → PayPal
                     (this server)
 ```
 
-- **Kratos** is xFlowPay's identity system. It speaks standard OIDC.
+- **Kratos** is Xflowpay's identity system. It speaks standard OIDC.
 - **Jackson** is a protocol bridge (BoxyHQ). It connects to upstream identity providers and exposes a clean OIDC interface downstream.
 - **PayPal** is the upstream identity provider. It offers OIDC, but with non-standard behavior.
 

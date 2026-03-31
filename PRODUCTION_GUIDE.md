@@ -9,12 +9,12 @@
   │   SAML IdP   │   POST to ACS    │  Bridge     │   authorize,   │  (Identity)   │
   │              │   AuthnRequest    │  (BoxyHQ)   │   token,       │              │
   │  paypal.com  │                  │  Owned by   │   userinfo     │  Owned by    │
-  │  Owned by    │                  │  xFlowPay   │                │  xFlowPay    │
+  │  Owned by    │                  │  Xflowpay   │                │  Xflowpay    │
   │  PayPal      │                  │             │                │              │
   └──────┬───────┘                  └──────┬──────┘                └──────┬───────┘
          │                                 │                              │
          │   User authenticates            │  Translates                  │  Creates/links
-         │   with PayPal creds             │  SAML ↔ OIDC                │  xFlowPay identity
+         │   with PayPal creds             │  SAML ↔ OIDC                │  Xflowpay identity
          │                                 │                              │
          └─────────────── Browser ─────────┴──────────────────────────────┘
                          (redirects)
@@ -27,16 +27,16 @@
 | Component | Owner | Protocol | Purpose |
 |-----------|-------|----------|---------|
 | PayPal SAML IdP | PayPal | SAML 2.0 | Authenticates users, issues SAML assertions |
-| Jackson Bridge | xFlowPay | SAML ↔ OAuth/OIDC | Receives SAML, exposes OIDC endpoints for Kratos |
-| Ory Kratos | xFlowPay | OIDC | Consumes OIDC to create/link user identities |
+| Jackson Bridge | Xflowpay | SAML ↔ OAuth/OIDC | Receives SAML, exposes OIDC endpoints for Kratos |
+| Ory Kratos | Xflowpay | OIDC | Consumes OIDC to create/link user identities |
 
 ---
 
 ## 2. What PayPal needs to do
 
-PayPal already runs a SAML 2.0 Identity Provider. They do **not** need to build anything new. They register xFlowPay as a **Service Provider (SP)** in their existing IdP.
+PayPal already runs a SAML 2.0 Identity Provider. They do **not** need to build anything new. They register Xflowpay as a **Service Provider (SP)** in their existing IdP.
 
-### Information xFlowPay provides to PayPal
+### Information Xflowpay provides to PayPal
 
 | Field | Value | Notes |
 |-------|-------|-------|
@@ -53,7 +53,7 @@ PayPal already runs a SAML 2.0 Identity Provider. They do **not** need to build 
 | `lastName` | Last name | Yes |
 | `displayName` | Full display name | Optional |
 
-### What PayPal gives back to xFlowPay
+### What PayPal gives back to Xflowpay
 
 | Artifact | How to obtain | Used for |
 |----------|---------------|----------|
@@ -63,20 +63,20 @@ PayPal already runs a SAML 2.0 Identity Provider. They do **not** need to build 
 
 ### Key clarification: PayPal does NOT create a new IdP
 
-PayPal's existing SAML IdP already serves many SPs (Okta, OneLogin, internal tools). Adding xFlowPay is just adding one more SP registration in their dashboard — same as how they'd add any enterprise partner.
+PayPal's existing SAML IdP already serves many SPs (Okta, OneLogin, internal tools). Adding Xflowpay is just adding one more SP registration in their dashboard — same as how they'd add any enterprise partner.
 
 ```
 PayPal SAML IdP (already exists)
  ├── SP: Okta (existing)
  ├── SP: Internal Tools (existing)
- └── SP: xFlowPay (new registration)  ← just this
+ └── SP: Xflowpay (new registration)  ← just this
         ACS URL: https://jackson.xflowpay.com/sso/acs
         Audience: https://saml.xflowpay.com
 ```
 
 ---
 
-## 3. What xFlowPay needs to do
+## 3. What Xflowpay needs to do
 
 ### 3.1 Deploy Jackson Bridge as a production service
 
@@ -183,7 +183,7 @@ cat jackson-public.pem | base64          # → OPENID_RSA_PUBLIC_KEY
 ```
 Step  Who → Where                          Protocol   What happens
 ─────────────────────────────────────────────────────────────────────────
- 1    User → xFlowPay login page           HTTPS      Clicks "Login with PayPal"
+ 1    User → Xflowpay login page           HTTPS      Clicks "Login with PayPal"
  2    Browser → Kratos                      OIDC       Kratos initiates authorize redirect
  3    Browser → Jackson /api/oauth/authorize  OAuth    Jackson builds SAML AuthnRequest
  4    Browser → PayPal /saml/sso            SAML       User sees PayPal login page
@@ -194,7 +194,7 @@ Step  Who → Where                          Protocol   What happens
  9    Kratos → Jackson /api/oauth/token     OIDC       Exchanges code + PKCE verifier for tokens
 10    Kratos → Jackson /api/oauth/userinfo  OIDC       Fetches user profile (email, name)
 11    Kratos creates/links identity         Internal   Upserts user in Kratos identity store
-12    User is logged in to xFlowPay         Session    Kratos session cookie set
+12    User is logged in to Xflowpay         Session    Kratos session cookie set
 ```
 
 ---
@@ -232,7 +232,7 @@ Step  Who → Where                          Protocol   What happens
 |---------|-------------|------------|
 | **PayPal cert rotation** | Assertion signature validation fails | Monitor metadata URL; Jackson supports re-importing metadata without downtime |
 | **Clock skew** | SAML assertions rejected (`NotBefore`/`NotOnOrAfter`) | NTP sync on Jackson host; Jackson has configurable tolerance |
-| **IdP-initiated login** | PayPal user clicks xFlowPay from PayPal dashboard (no AuthnRequest) | Set `IDP_ENABLED=true` in Jackson; configure `IDP_DISCOVERY_PATH` |
+| **IdP-initiated login** | PayPal user clicks Xflowpay from PayPal dashboard (no AuthnRequest) | Set `IDP_ENABLED=true` in Jackson; configure `IDP_DISCOVERY_PATH` |
 | **Multiple PayPal tenants** | E.g. PayPal US vs PayPal EU with different IdPs | Jackson natively supports multiple connections per tenant |
 | **User deprovisioning** | PayPal disables a user, but they still have a Kratos session | Use SCIM directory sync (Jackson supports it) or short session TTLs |
 | **Encrypted assertions** | PayPal encrypts SAML assertions (common in enterprise) | Provide Jackson's public key to PayPal; set `encryptionCert` in connection |
@@ -260,9 +260,9 @@ Step  Who → Where                          Protocol   What happens
 
 > Send this to PayPal's IT/SSO team.
 
-**Subject: SAML SSO Configuration Request for xFlowPay**
+**Subject: SAML SSO Configuration Request for Xflowpay**
 
-xFlowPay requests SAML 2.0 SSO integration with PayPal's Identity Provider.
+Xflowpay requests SAML 2.0 SSO integration with PayPal's Identity Provider.
 
 **Service Provider Details:**
 

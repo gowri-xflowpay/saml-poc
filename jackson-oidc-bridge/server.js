@@ -514,7 +514,7 @@ function baseStyle() {
 
 function landingHTML() {
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>xFlowPay — PayPal OIDC SSO</title>
+<html><head><meta charset="utf-8"><title>Xflowpay — PayPal OIDC SSO</title>
 <style>
   ${baseStyle()}
   h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 6px; }
@@ -528,7 +528,7 @@ function landingHTML() {
   .arch { margin-top: 20px; padding: 14px; background: #f8f9fa; border-radius: 8px; font-family: 'SF Mono', monospace; font-size: 11px; line-height: 1.8; color: #555; text-align: left; }
 </style></head>
 <body><div class="container" style="text-align:center">
-  <h1>xFlowPay Portal</h1>
+  <h1>Xflowpay Portal</h1>
   <p class="sub">Login via PayPal <span class="tag tag-oidc">OIDC → Jackson → OIDC</span></p>
   <a href="/sso/login" class="sso-btn">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .76-.654h6.554c2.174 0 3.686.457 4.49 1.358.378.422.615.891.71 1.392.1.525.093 1.152-.023 1.92l-.012.073v.636l.497.283c.42.225.754.487 1.004.788.339.406.553.91.635 1.498.085.606.034 1.308-.148 2.085a6.946 6.946 0 0 1-.81 2.092 4.57 4.57 0 0 1-1.283 1.382c-.49.354-1.073.62-1.733.79-.64.167-1.375.252-2.183.252h-.518a1.563 1.563 0 0 0-1.543 1.315l-.039.199-.659 4.17-.03.144a.097.097 0 0 1-.097.084H7.076Z"/></svg>

@@ -1,12 +1,12 @@
 # PayPal SAML SSO POC — BoxyHQ Jackson Bridge
 
-Proof-of-concept demonstrating how **PayPal (acting as a SAML 2.0 Identity Provider)** can authenticate users into **xFlowPay** via a **BoxyHQ Jackson SAML-to-OAuth 2.0 bridge**.
+Proof-of-concept demonstrating how **PayPal (acting as a SAML 2.0 Identity Provider)** can authenticate users into **Xflowpay** via a **BoxyHQ Jackson SAML-to-OAuth 2.0 bridge**.
 
 ## Architecture
 
 ```
 ┌──────────────┐  SAML AuthnReq   ┌──────────────────┐  OAuth authorize  ┌──────────────┐
-│  PayPal SAML │ ◄──────────────── │  BoxyHQ Jackson   │ ◄──────────────── │  xFlowPay    │
+│  PayPal SAML │ ◄──────────────── │  BoxyHQ Jackson   │ ◄──────────────── │  Xflowpay    │
 │  IdP (mock)  │ ──────────────── ▶│  (SAML → OAuth)   │ ──────────────── ▶│  Demo App    │
 │  Port 7001   │  SAML Assertion   │  Port 5225        │  Code + Token     │  (embedded)  │
 └──────────────┘                   └──────────────────┘                   └──────────────┘
